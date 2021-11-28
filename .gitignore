@@ -1,2 +1,2 @@
 .git/
-artifacts/*
+/src/artifacts/*
