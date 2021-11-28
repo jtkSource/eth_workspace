@@ -15,7 +15,7 @@ contract Lottery{
     receive() external payable{
         //eth number without suffix are assumed to be wei
         // 100000000000000000 in wei can be written as 0.1 ether
-        require(msg.value >= 0.1 ether,"should send atleast 0.1 ether "); // will throw exception and transaction is reverted to inital state and consume all gas
+        require(msg.value == 0.1 ether,"should send 0.1 ether "); // will throw exception and transaction is reverted to inital state and consume all gas
         // convert plain address to a payable one
         players.push(payable(msg.sender));
     }
@@ -29,5 +29,21 @@ contract Lottery{
     function getBalance() public view returns(uint){
         require(msg.sender == manager,"Only manager can view balance"); // only manager can see the balance
         return address(this).balance;
+    }
+
+// should use chainlink to generate random number 
+// https://docs.chain.link/docs/get-a-random-number/
+    function random() public view returns(uint){
+        return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, players)));
+    }
+
+    function pickWinner() public{
+        require(msg.sender == manager);
+        require(players.length  >= 3);
+        uint r = random();
+        address payable winner;
+        uint index = r % players.length;
+        winner = players[index];
+        winner.transfer(getBalance());
     }
 }
