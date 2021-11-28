@@ -17,6 +17,11 @@ contract Lottery{
         players.push(payable(msg.sender));
     }
 
+    fallback() external payable{
+        
+    }
+
+
     //returns the balance of the caller
     function getBalance() public view returns(uint){
         return address(this).balance;
