@@ -20,10 +20,7 @@ contract Lottery{
         players.push(payable(msg.sender));
     }
 
-    fallback() external payable{
-
-    }
-
+    fallback() external payable{}
 
     //returns the balance of the caller
     function getBalance() public view returns(uint){
@@ -31,8 +28,8 @@ contract Lottery{
         return address(this).balance;
     }
 
-// should use chainlink to generate random number 
-// https://docs.chain.link/docs/get-a-random-number/
+    // should use chainlink to generate random number 
+    // https://docs.chain.link/docs/get-a-random-number/
     function random() public view returns(uint){
         return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, players)));
     }
