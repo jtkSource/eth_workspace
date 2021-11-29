@@ -1,5 +1,22 @@
 //SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.5.0 <0.9.0;
+pragma solidity >=0.5.0<0.9.0;
+
+/**
+ The creator class is a factory that allows the 
+ EOA to create new Auction Contracts and assign the 
+ ownership to the EOA
+ These Account contracts can be accessed by their address
+ available in the auctionList variable
+**/
+contract AuctionCreator{
+    Auction[] public auctionList;
+
+    function createAuction() public {
+        Auction newAuction  = new Auction(msg.sender);
+        auctionList.push(newAuction);
+    }
+}
+
 contract Auction{
     address payable public owner;
     uint public startBlock;
@@ -14,8 +31,8 @@ contract Auction{
     address[] public bidKeys;
     uint bidIncrement;
 
-    constructor(){
-        owner = payable(msg.sender);
+    constructor(address eoa){
+        owner = payable(eoa);
         auctionState = State.Running;
         startBlock = block.number;
         // assumes that the block is generated every 50s
