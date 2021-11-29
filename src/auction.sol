@@ -24,6 +24,10 @@ contract Auction{
         bidIncrement = 100; //wei
     }
 
+    modifier onlyOwner(){
+        require(msg.sender == owner);
+        _;
+    }
     // function modifier to check if bidder is not owner
     modifier notOwner(){
         require(msg.sender != owner);
@@ -54,19 +58,12 @@ contract Auction{
         require(currentBid > highestBindingBid,
            string( abi.encodePacked("currentBid should be higher than higestBindingBid: ", highestBindingBid)));
         bids[msg.sender] = currentBid;
-        if(currentBid <= bids[highestBidder]){
-            highestBindingBid = min(currentBid + bidIncrement, bids[highestBidder]);
-        }else{
-            highestBindingBid = min(currentBid, bids[highestBidder] + bidIncrement);
-            highestBidder = payable(msg.sender);
-        }
+        highestBindingBid = currentBid + bidIncrement;
+        highestBidder = payable(msg.sender);
     }
 
-    function min(uint a, uint b) pure internal returns(uint){
-        if( a <= b){
-            return a;
-        }else{
-            return b;
-        }
+
+    function cancelAuction() public onlyOwner {
+        auctionState = State.Cancelled;
     }
 }
