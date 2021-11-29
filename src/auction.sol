@@ -66,4 +66,28 @@ contract Auction{
     function cancelAuction() public onlyOwner {
         auctionState = State.Cancelled;
     }
+
+    function finalizeAuction() public{
+        require(auctionState == State.Cancelled || block.number > endBlock);
+        require(msg.sender == owner || bids[msg.sender] > 0);
+        
+        address payable recipient;
+        uint value;
+
+        if(auctionState == State.Cancelled) {
+            // if cancelled all users can get their respective bid
+            recipient = payable(msg.sender);
+            value = bids[msg.sender];
+        }else {
+            // auction ended - not cancelled
+            // highest bidder should only get the money
+            // this is a highest bidder
+            if(msg.sender == highestBidder){
+                recipient = highestBidder;
+                value = bids[highestBidder];
+                
+            }
+        }
+        recipient.transfer(value);
+    }
 }
