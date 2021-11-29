@@ -8,6 +8,10 @@ contract CrowdFunding{
     /**
         Successful campaign if minimumContribution is met
         within the deadline
+        One of the features of this contract is that the admin cannot 
+        get the money without getting a majority vote from the contributors
+        Unlike traditional systems which are honour based - here the control is 
+        more on the user side
 
     **/
     uint public minimumContribution;
@@ -15,6 +19,19 @@ contract CrowdFunding{
     uint public goal; // maximum amount to raise
 
     uint public raisedAmount; // public raised amount
+
+    struct SpendingRequest{
+        string description;
+        address payable recipient;
+        uint value;
+        bool completed;
+        int noOfVoters;
+        // latest solidity version doesnt allow storing struct with mapping attribute in arrays
+        mapping(address => bool) voters;
+    }
+
+    mapping(uint => SpendingRequest) public spendingrequests;
+    uint public numRequests;
 
     constructor(uint _goal, uint _deadline){
         goal = _goal;
@@ -53,7 +70,23 @@ contract CrowdFunding{
         uint value = contributors[msg.sender];
         recipient.transfer(value);
         contributors[msg.sender] = 0;
-        
+
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin,"only admin can call this function");
+        _;
+    }
+
+    function createRequest(string memory _description, address payable _recipient, uint _value) 
+    public onlyAdmin{
+        SpendingRequest storage newRequest = spendingrequests[numRequests];
+        numRequests++;
+        newRequest.description = _description;
+        newRequest.recipient = _recipient;
+        newRequest.value = _value;
+        newRequest.completed = false;
+        newRequest.noOfVoters = 0;
     }
 
 }
