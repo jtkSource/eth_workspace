@@ -25,7 +25,7 @@ contract CrowdFunding{
         address payable recipient;
         uint value;
         bool completed;
-        int noOfVoters;
+        uint noOfVoters;
         // latest solidity version doesnt allow storing struct with mapping attribute in arrays
         mapping(address => bool) voters;
     }
@@ -95,6 +95,15 @@ contract CrowdFunding{
         require(thisRequest.voters[msg.sender] == false, "You have already voted!!");
         thisRequest.voters[msg.sender] = true;
         thisRequest.noOfVoters++;
+    }
+
+    function makePayment(uint _requestNo) public onlyAdmin{
+        require(raisedAmount >= goal);
+        SpendingRequest storage thisRequest = spendingrequests[_requestNo];
+        require(thisRequest.completed == false,"The Spending Request has been completed");
+        require(thisRequest.noOfVoters > noOfContributors / 2);
+        thisRequest.recipient.transfer(thisRequest.value);
+        thisRequest.completed = true;
     }
 
 }
