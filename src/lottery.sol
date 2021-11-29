@@ -5,17 +5,24 @@ pragma solidity >=0.5.0 <0.9.0;
 contract Lottery{
     // addresses from where bids can be placed
     address payable[] public players;
-    address public manager;
+    address payable public manager;
 
     constructor(){
-        manager = msg.sender; // owner of the contract
+        manager = payable(msg.sender); // owner of the contract
+        
+        // add manager to the lottery
+        players.push(manager);
+
     }   
 
 // enable receiving eth
     receive() external payable{
+        
+        require(msg.sender != manager,"Manager cannot participate in the lottery");
         //eth number without suffix are assumed to be wei
         // 100000000000000000 in wei can be written as 0.1 ether
         require(msg.value == 0.1 ether,"should send 0.1 ether "); // will throw exception and transaction is reverted to inital state and consume all gas
+        
         // convert plain address to a payable one
         players.push(payable(msg.sender));
     }
@@ -35,13 +42,20 @@ contract Lottery{
     }
 
     function pickWinner() public{
-        require(msg.sender == manager);
-        require(players.length  >= 3);
-        uint r = random();
-        address payable winner;
-        uint index = r % players.length;
-        winner = players[index];
-        winner.transfer(getBalance());
-        players = new address payable[](0);// resetting the Lottery
-    }
-}
+        //anyone can pickwinner if there is more than 10 players
+            if(players.length < 10){
+                require(msg.sender == manager);
+            }
+            require(players.length  >= 3);
+            uint r = random();
+            address payable winner;
+            uint index = r % players.length;
+            winner = players[index];
+            uint balance = getBalance();
+            uint managerPayout = (balance/10);
+            uint playerPayout = balance - managerPayout;
+            winner.transfer(playerPayout);
+            manager.transfer(managerPayout);
+            players = new address payable[](0);
+        }
+   }
