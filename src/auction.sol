@@ -11,6 +11,7 @@ contract Auction{
     uint public highestBindingBid;
     address payable public highestBidder;
     mapping(address => uint) public bids;
+    address[] public bidKeys;
     uint bidIncrement;
 
     constructor(){
@@ -19,7 +20,7 @@ contract Auction{
         startBlock = block.number;
         // assumes that the block is generated every 50s
         // calculate number of blocks created in a week
-        endBlock = startBlock + 40320;
+        endBlock = startBlock + 3;
         ipfsHash = "";
         bidIncrement = 100; //wei
     }
@@ -58,6 +59,7 @@ contract Auction{
         require(currentBid > highestBindingBid,
            string( abi.encodePacked("currentBid should be higher than higestBindingBid: ", highestBindingBid)));
         bids[msg.sender] = currentBid;
+        bidKeys.push(msg.sender);
         highestBindingBid = currentBid + bidIncrement;
         highestBidder = payable(msg.sender);
     }
@@ -67,7 +69,7 @@ contract Auction{
         auctionState = State.Cancelled;
     }
 
-    function finalizeAuction() public{
+    function finalizeAuction() public returns(uint){
         require(auctionState == State.Cancelled || block.number > endBlock);
         require(msg.sender == owner || bids[msg.sender] > 0);
         
@@ -82,12 +84,17 @@ contract Auction{
             // auction ended - not cancelled
             // highest bidder should only get the money
             // this is a highest bidder
+            // cannot iterate map keys
+            //https://ethereum.stackexchange.com/questions/13167/are-there-well-solved-and-simple-storage-patterns-for-solidity
+
             if(msg.sender == highestBidder){
                 recipient = highestBidder;
-                value = bids[highestBidder];
-                
+                for(uint i=0; i < bidKeys.length; i++){
+                    value = value + bids[bidKeys[i]];
+                }
             }
         }
         recipient.transfer(value);
+        return value;
     }
 }
