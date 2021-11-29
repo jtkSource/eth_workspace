@@ -2,13 +2,12 @@
 pragma solidity >=0.5.0<0.9.0;
 
 /**
- The creator class is a factory that allows the 
- EOA to create new Auction Contracts and assign the 
- ownership to the EOA
+ The factory class allows the EOA to create new 
+ Auction Contracts and assign the ownership to the EOA
  These Account contracts can be accessed by their address
  available in the auctionList variable
 **/
-contract AuctionCreator{
+contract AuctionFactory{
     Auction[] public auctionList;
 
     function createAuction() public {
