@@ -41,6 +41,11 @@ contract CrowdFunding{
         admin = msg.sender;
     }
 
+    event ContributeEvent(address _sender, uint _value);
+    event CreateRequestEvent(string _description, address _recipient, uint _value);
+    event MakePaymentEvent(address _recipient, uint _value);
+
+
     function contribute() public payable{
         require(block.timestamp < deadline,"deadline has passed");
         require(msg.value >= minimumContribution," Minimum contribution not met! ");
@@ -50,6 +55,8 @@ contract CrowdFunding{
         }
         contributors[msg.sender] += msg.value;
         raisedAmount += msg.value;
+
+        emit ContributeEvent(msg.sender, msg.value);
     }
 
     receive() payable external{
@@ -87,6 +94,8 @@ contract CrowdFunding{
         newRequest.value = _value;
         newRequest.completed = false;
         newRequest.noOfVoters = 0;
+
+        emit CreateRequestEvent(_description,_recipient, _value);
     }
 
     function voteRequest(uint _requestNo) public {
@@ -104,6 +113,7 @@ contract CrowdFunding{
         require(thisRequest.noOfVoters > noOfContributors / 2);
         thisRequest.recipient.transfer(thisRequest.value);
         thisRequest.completed = true;
+        emit MakePaymentEvent(thisRequest.recipient, thisRequest.value);
     }
 
 }
